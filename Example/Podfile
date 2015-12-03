@@ -7,6 +7,5 @@ end
 
 target 'PhotosHelper_Tests', :exclusive => true do
   pod "PhotosHelper", :path => "../"
-
   
 end
