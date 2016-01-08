@@ -4,6 +4,7 @@
 [![Version](https://img.shields.io/cocoapods/v/PhotosHelper.svg?style=flat)](http://cocoapods.org/pods/PhotosHelper)
 [![License](https://img.shields.io/cocoapods/l/PhotosHelper.svg?style=flat)](http://cocoapods.org/pods/PhotosHelper)
 [![Platform](https://img.shields.io/cocoapods/p/PhotosHelper.svg?style=flat)](http://cocoapods.org/pods/PhotosHelper)
+[![Status](https://img.shields.io/badge/status-work%20in%20progress-orange.svg)](http://cocoapods.org/pods/PhotosHelper)
 
 <p align="center">
 <img src="Pod/Logo_square.png" alt="Droids On Roids logo"/>
