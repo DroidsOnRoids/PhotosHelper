@@ -12,49 +12,47 @@
 ## Usage
 
 ```swift
-PhotosHelper.saveImage(image)
 PhotosHelper.saveImage(image, toAlbum: "Album Name")
-PhotosHelper.saveImage(image, toAlbum: "Album name", completion: { (success, error) in
+PhotosHelper.saveImage(image, toAlbum: "Album name", completion: { success, error in
 
 })
 ```
 
 Note: Trying to create an album with a name that already exists won't overwrite anything.
 ```swift
-PhotosHelper.createAlbum(completion: { (album) -> () in
-
-})
-PhotosHelper.createAlbum("Album Name", completion: { (album) -> () in
+PhotosHelper.createAlbum("Album Name", completion: { album in
 
 })
 ```
 
 Note: If an album with the specified name does not exist, it is created and then returned normally.
 ```swift
-PhotosHelper.getAlbum(completion: { (album) -> () in
-
-})
-PhotosHelper.getAlbum("Album Name", completion: { (album) -> () in
+PhotosHelper.getAlbum("Album Name", completion: { album in
 
 })
 ```
 
 Note: *Default options specify: ordering newest first, in original size, synchronously, in the best quality and scaled AspectFill.*
 ```swift
-PhotosHelper.getImagesFromAlbum(completion: { (result) -> () in
+PhotosHelper.getImagesFromAlbum(completion: { result in
 
 })
 ```
 
 ```swift
-var options = PhotosHelper.ImageFetchOptions()
+var options = PhotosHelper.defaultImageFetchOptions
 options.deliveryMode = .FastFormat
 
-PhotosHelper.getImagesFromAlbum("Album Name", options: options, completion: { (result) -> () in
+var fetchOptions = PhotosHelper.FetchOptions()
+fetchOptions.count = 1
+
+PhotosHelper.getImagesFromAlbum("Album Name", options: options, fetchOptions: fetchoptions, completion: { result in
     switch result {
-    case .Images(let images):
+    // when options.synchronous is set to true an array of all assets is fetched
+    case .Assets(let images):
         ()
-    case .Image(let image):
+    // when options.synchronous is set to false the system fetches one asset at a time calling this completion handler multiple times
+    case .Asset(let image):
         ()
     case .Error:
         ()
