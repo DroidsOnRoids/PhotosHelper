@@ -1,12 +1,12 @@
 Pod::Spec.new do |s|
   s.name             = "PhotosHelper"
-  s.version          = "0.1.0"
+  s.version          = "0.2.0"
   s.summary          = "Collection of methods to work with Photos Framework in Swift."
 
   s.description      = <<-DESC
                        Simplest way to interact with the Photos.app.
                        Create albums, save images in one line of code.
-                       Asynchronous, closure based, written in Swift 2.
+                       Asynchronous, closure based, written in latest Swift.
 
                        Constantly updated, support for other asset types will come soon.
                        DESC

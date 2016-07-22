@@ -31,7 +31,7 @@ class ViewController: UIViewController {
         let captureButton = UIButton()
         captureButton.setTitle("take a picture", forState: .Normal)
         captureButton.sizeToFit()
-        captureButton.addTarget(self, action: "takePicture:", forControlEvents: .TouchUpInside)
+        captureButton.addTarget(self, action: #selector(ViewController.takePicture(_:)), forControlEvents: .TouchUpInside)
         
         captureButton.center = CGPoint(x: view.frame.width / 2, y: view.frame.height - captureButton.frame.height / 2 - Padding)
         
@@ -94,7 +94,7 @@ class ViewController: UIViewController {
                 let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(buffer)
                 guard let image = UIImage(data: imageData) else { return }
                 
-                PhotosHelper.saveImage(image)
+                PhotosHelper.saveImage(image, toAlbum: "Example Album")
             }
         }
     }
