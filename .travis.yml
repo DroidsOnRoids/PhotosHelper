@@ -4,4 +4,4 @@ before_install:
     - gem install cocoapods
     - pod install --project-directory=Example
 script:
-    - xcodebuild clean build test -workspace Example/PhotosHelper.xcworkspace -scheme PhotosHelper-Example -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO GCC_INSTRUMENT_PROGRAM_FLOW_ARCS=YES GCC_GENERATE_TEST_COVERAGE_FILES=YES
+    - xcodebuild clean build -workspace Example/PhotosHelper.xcworkspace -scheme PhotosHelper-Example -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO GCC_INSTRUMENT_PROGRAM_FLOW_ARCS=YES GCC_GENERATE_TEST_COVERAGE_FILES=NO
