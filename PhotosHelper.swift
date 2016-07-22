@@ -107,7 +107,7 @@ public struct PhotosHelper {
     public static func saveImage(image: UIImage, toAlbum named: String, completion: ((success: Bool, error: NSError?) -> ())? = nil) {
         PhotosHelper.getAlbum(named, completion: { album in
             guard let album = album else { completion?(success: false, error: nil); return; }
-            PhotosHelper.saveImage(image, to: album)
+            PhotosHelper.saveImage(image, to: album, completion: completion)
         })
     }
     

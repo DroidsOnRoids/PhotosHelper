@@ -1,11 +1,6 @@
 source 'https://github.com/CocoaPods/Specs.git'
 use_frameworks!
 
-target 'PhotosHelper_Example', :exclusive => true do
+target 'PhotosHelper_Example' do
   pod "PhotosHelper", :path => "../"
-end
-
-target 'PhotosHelper_Tests', :exclusive => true do
-  pod "PhotosHelper", :path => "../"
-  
 end

@@ -47,7 +47,7 @@ options.deliveryMode = .FastFormat
 var fetchOptions = PhotosHelper.FetchOptions()
 fetchOptions.count = 1
 
-PhotosHelper.getImagesFromAlbum("Album Name", options: options, fetchOptions: fetchoptions, completion: { result in
+PhotosHelper.getImagesFromAlbum("Album Name", options: options, fetchOptions: fetchOptions, completion: { result in
     switch result {
     // when options.synchronous is set to true an array of all assets is fetched
     case .Assets(let images):

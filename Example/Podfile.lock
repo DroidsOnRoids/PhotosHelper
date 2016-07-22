@@ -1,14 +1,14 @@
 PODS:
-  - PhotosHelper (0.1.0)
+  - PhotosHelper (0.2.1)
 
 DEPENDENCIES:
   - PhotosHelper (from `../`)
 
 EXTERNAL SOURCES:
   PhotosHelper:
-    :path: "../"
+    :path: ../
 
 SPEC CHECKSUMS:
-  PhotosHelper: 6c1f90110a46ab2899e14b0cff167ccda3c3a795
+  PhotosHelper: 82ac7527abc391d02b215222e91d4be42a36a9c6
 
 COCOAPODS: 0.39.0
