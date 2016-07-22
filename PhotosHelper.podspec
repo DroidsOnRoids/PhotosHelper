@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "PhotosHelper"
-  s.version          = "0.2.0"
+  s.version          = "0.2.1"
   s.summary          = "Collection of methods to work with Photos Framework in Swift."
 
   s.description      = <<-DESC
