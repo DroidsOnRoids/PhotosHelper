@@ -233,6 +233,27 @@ public struct PhotosHelper {
     }
     
     /**
+     Retrieve all albums from the Photos app.
+     
+     - parameter completion: Called in the background when all albums were retrieved.
+     */
+    public static func getAlbums(completion: (albums: [PHAssetCollection]) -> ()) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
+            
+            let albums = PHAssetCollection.fetchAssetCollectionsWithType(.SmartAlbum, subtype: .AlbumRegular, options: nil)
+            
+            var result = [PHAssetCollection]()
+            
+            albums.enumerateObjectsUsingBlock { collection, index, stop in
+                guard let album = collection as? PHAssetCollection else { return }
+                result.append(album)
+            }
+            
+            completion(albums: result)
+        }
+    }
+    
+    /**
      Retrieve all user created albums from the Photos app.
      
      - parameter completion: Called in the background when all albums were retrieved.
@@ -250,6 +271,20 @@ public struct PhotosHelper {
             }
             
             completion(albums: result)
+        }
+    }
+    
+    /**
+     Retrieve camera roll album the Photos app.
+     
+     - parameter completion: Called in the background when the album was retrieved.
+     */
+    public static func getCameraRollAlbum(completion: (album: PHAssetCollection?) -> ()) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
+            
+            let albums = PHAssetCollection.fetchAssetCollectionsWithType(.SmartAlbum, subtype: .AlbumMyPhotoStream, options: nil)
+            
+            completion(album: albums.firstObject as? PHAssetCollection)
         }
     }
 }
