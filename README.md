@@ -1,6 +1,5 @@
 # PhotosHelper
 
-[![CI Status](http://img.shields.io/travis/DroidsOnRoids/PhotosHelper.svg?style=flat)](https://travis-ci.org/DroidsOnRoids/PhotosHelper)
 [![Version](https://img.shields.io/cocoapods/v/PhotosHelper.svg?style=flat)](http://cocoapods.org/pods/PhotosHelper)
 [![License](https://img.shields.io/cocoapods/l/PhotosHelper.svg?style=flat)](http://cocoapods.org/pods/PhotosHelper)
 [![Platform](https://img.shields.io/cocoapods/p/PhotosHelper.svg?style=flat)](http://cocoapods.org/pods/PhotosHelper)
