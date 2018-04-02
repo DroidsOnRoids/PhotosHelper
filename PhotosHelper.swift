@@ -40,11 +40,11 @@ public struct PhotosHelper {
     /// Default options to pass when fetching images. Fetches only images from the device (not from iCloud), synchronously and in best quality.
     public static var defaultImageFetchOptions: PHImageRequestOptions {
         let options = PHImageRequestOptions()
-        options.version = .Original
-        options.deliveryMode = .HighQualityFormat
-        options.resizeMode = .None
-        options.networkAccessAllowed = false
-        options.synchronous = true
+        options.version = .original
+        options.deliveryMode = .highQualityFormat
+        options.resizeMode = .none
+        options.isNetworkAccessAllowed = false
+        options.isSynchronous = true
         
         return options
     }
@@ -55,21 +55,21 @@ public struct PhotosHelper {
      - parameter named:      Name of the album.
      - parameter completion: Called in the background when an album was created.
      */
-    public static func createAlbum(named: String, completion: (album: PHAssetCollection?) -> ()) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
+    public static func createAlbum(named: String, completion: @escaping (_ album: PHAssetCollection?) -> ()) {
+        DispatchQueue.global(qos: .background).async {
             var placeholder: PHObjectPlaceholder?
             
-            PHPhotoLibrary.sharedPhotoLibrary().performChanges({
-                let createAlbumRequest = PHAssetCollectionChangeRequest.creationRequestForAssetCollectionWithTitle(named)
+            PHPhotoLibrary.shared().performChanges({
+                let createAlbumRequest = PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: named)
                 placeholder = createAlbumRequest.placeholderForCreatedAssetCollection
             }) { success, error in
                 var album: PHAssetCollection?
                 if success {
-                    let collectionFetchResult = PHAssetCollection.fetchAssetCollectionsWithLocalIdentifiers([placeholder?.localIdentifier ?? ""], options: nil)
-                    album = collectionFetchResult.firstObject as? PHAssetCollection
+                    let collectionFetchResult = PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: [placeholder?.localIdentifier ?? ""], options: nil)
+                    album = collectionFetchResult.firstObject
                 }
                 
-                completion(album: album)
+                completion(album)
             }
         }
     }
@@ -80,17 +80,17 @@ public struct PhotosHelper {
      - parameter named:      Name of the album.
      - parameter completion: Called in the background when an album was retrieved.
      */
-    public static func getAlbum(named: String, completion: (album: PHAssetCollection?) -> ()) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
+    public static func getAlbum(named: String, completion: @escaping (_ album: PHAssetCollection?) -> ()) {
+        DispatchQueue.global(qos: .background).async {
             let fetchOptions = PHFetchOptions()
             fetchOptions.predicate = NSPredicate(format: "title = %@", named)
-            let collections = PHAssetCollection.fetchAssetCollectionsWithType(.Album, subtype: .Any, options: fetchOptions)
+            let collections = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: fetchOptions)
             
-            if let album = collections.firstObject as? PHAssetCollection {
-                completion(album: album)
+            if let album = collections.firstObject {
+                completion(album)
             } else {
-                PhotosHelper.createAlbum(named) { album in
-                    completion(album: album)
+                PhotosHelper.createAlbum(named: named) { album in
+                    completion(album)
                 }
             }
         }
@@ -104,9 +104,9 @@ public struct PhotosHelper {
      - parameter named:      Name of the album.
      - parameter completion: Called in the background when the image was saved or in case of any error.
      */
-    public static func saveImage(image: UIImage, toAlbum named: String, completion: ((success: Bool, error: NSError?) -> ())? = nil) {
-        PhotosHelper.getAlbum(named, completion: { album in
-            guard let album = album else { completion?(success: false, error: nil); return; }
+    public static func saveImage(_ image: UIImage, toAlbum named: String, completion: ((_ success: Bool, _ error: Error?) -> ())? = nil) {
+        PhotosHelper.getAlbum(named: named, completion: { album in
+            guard let album = album else { completion?(false, nil); return; }
             PhotosHelper.saveImage(image, to: album, completion: completion)
         })
     }
@@ -118,18 +118,18 @@ public struct PhotosHelper {
      - parameter image:      Image to save.
      - parameter completion: Called in the background when the image was saved or in case of any error.
      */
-    public static func saveImage(image: UIImage, to album: PHAssetCollection, completion: ((success: Bool, error: NSError?) -> ())? = nil) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
-            PHPhotoLibrary.sharedPhotoLibrary().performChanges({
-                let assetRequest = PHAssetChangeRequest.creationRequestForAssetFromImage(image)
+    public static func saveImage(_ image: UIImage, to album: PHAssetCollection, completion: ((_ success: Bool, _ error: Error?) -> ())? = nil) {
+        DispatchQueue.global(qos: .background).async {
+            PHPhotoLibrary.shared().performChanges({
+                let assetRequest = PHAssetChangeRequest.creationRequestForAsset(from: image)
                 let placeholder = assetRequest.placeholderForCreatedAsset
-                guard let _placeholder = placeholder else { completion?(success: false, error: nil); return; }
+                guard let _placeholder = placeholder else { completion?(false, nil); return; }
                 
-                let albumChangeRequest = PHAssetCollectionChangeRequest(forAssetCollection: album)
-                albumChangeRequest?.addAssets([_placeholder])
+                let albumChangeRequest = PHAssetCollectionChangeRequest(for: album)
+                albumChangeRequest?.addAssets(NSArray(object: _placeholder))
             }) { success, error in
-                completion?(success: success, error: error)
-            }
+                completion?(success, error)
+                }
         }
     }
     
@@ -141,12 +141,12 @@ public struct PhotosHelper {
      - parameter fetchOptions: Define order and amount of images.
      - parameter completion:   Called in the background when images were retrieved or in case of any error.
      */
-    public static func getImagesFromAlbum(named: String, options: PHImageRequestOptions = defaultImageFetchOptions, fetchOptions: FetchOptions = FetchOptions(), completion: (result: AssetFetchResult<UIImage>) -> ()) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
+    public static func getImagesFromAlbum(_ named: String, options: PHImageRequestOptions = defaultImageFetchOptions, fetchOptions: FetchOptions = FetchOptions(), completion: @escaping (_ result: AssetFetchResult<UIImage>) -> ()) {
+        DispatchQueue.global(qos: .background).async {
             let albumFetchOptions = PHFetchOptions()
             albumFetchOptions.predicate = NSPredicate(format: "(estimatedAssetCount > 0) AND (localizedTitle == %@)", named)
-            let albums = PHAssetCollection.fetchAssetCollectionsWithType(.Album, subtype: .Any, options: albumFetchOptions)
-            guard let album = albums.firstObject as? PHAssetCollection else { return completion(result: .Error) }
+            let albums = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: albumFetchOptions)
+            guard let album = albums.firstObject else { return completion(.Error) }
             
             PhotosHelper.getImagesFromAlbum(album, options: options, completion: completion)
         }
@@ -159,24 +159,24 @@ public struct PhotosHelper {
      - parameter fetchOptions: Define order and amount of images.
      - parameter completion:   Called in the background when images were retrieved or in case of any error.
      */
-    public static func getImagesFromAlbum(album: PHAssetCollection, options: PHImageRequestOptions = defaultImageFetchOptions, fetchOptions: FetchOptions = FetchOptions(), completion: (result: AssetFetchResult<UIImage>) -> ()) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
+    public static func getImagesFromAlbum(_ album: PHAssetCollection, options: PHImageRequestOptions = defaultImageFetchOptions, fetchOptions: FetchOptions = FetchOptions(), completion: @escaping (_ result: AssetFetchResult<UIImage>) -> ()) {
+        DispatchQueue.global(qos: .background).async {
             PhotosHelper.getAssetsFromAlbum(album, fetchOptions: fetchOptions, completion: { result in
                 switch result {
                 case .Asset: ()
-                case .Error: completion(result: .Error)
+                case .Error: completion(.Error)
                 case .Assets(let assets):
-                    let imageManager = PHImageManager.defaultManager()
+                    let imageManager = PHImageManager.default()
                     
                     assets.forEach { asset in
-                        imageManager.requestImageForAsset(
-                            asset,
+                        imageManager.requestImage(
+                            for: asset,
                             targetSize: fetchOptions.size ?? CGSize(width: asset.pixelWidth, height: asset.pixelHeight),
-                            contentMode: .AspectFill,
+                            contentMode: .aspectFill,
                             options: options,
                             resultHandler: { image, _ in
                                 guard let image = image else { return }
-                                completion(result: .Asset(image))
+                                completion(.Asset(image))
                         })
                     }
                 }
@@ -191,25 +191,23 @@ public struct PhotosHelper {
      - parameter fetchOptions: Define order and amount of assets. Size is ignored.
      - parameter completion:   Called in the background when assets were retrieved or in case of any error.
      */
-    public static func getAssetsFromAlbum(album: PHAssetCollection, fetchOptions: FetchOptions = FetchOptions(), completion: (result: AssetFetchResult<PHAsset>) -> ()) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
+    public static func getAssetsFromAlbum(_ album: PHAssetCollection, fetchOptions: FetchOptions = FetchOptions(), completion: @escaping (_ result: AssetFetchResult<PHAsset>) -> ()) {
+        DispatchQueue.global(qos: .background).async {
             let assetsFetchOptions = PHFetchOptions()
             assetsFetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: !fetchOptions.newestFirst)]
             
             var assets = [PHAsset]()
             
-            let fetchedAssets = PHAsset.fetchAssetsInAssetCollection(album, options: assetsFetchOptions)
+            let fetchedAssets = PHAsset.fetchAssets(in: album, options: assetsFetchOptions)
             
-            let rangeLength = min(fetchedAssets.count, fetchOptions.count)
-            let range = NSRange(location: 0, length: fetchOptions.count != 0 ? rangeLength : fetchedAssets.count)
-            let indexes = NSIndexSet(indexesInRange: range)
-            
-            fetchedAssets.enumerateObjectsAtIndexes(indexes, options: []) { asset, index, stop in
-                guard let asset = asset as? PHAsset else { return completion(result: .Error) }
+            let rangeLength = fetchOptions.count != 0 ? min(fetchedAssets.count, fetchOptions.count) : fetchedAssets.count
+            let indexSet = IndexSet(integersIn: 0...rangeLength)
+
+            fetchedAssets.enumerateObjects(at: indexSet, options: []) { asset, index, stop in
                 assets.append(asset)
             }
             
-            completion(result: .Assets(assets))
+            completion(.Assets(assets))
         }
     }
     
@@ -218,24 +216,23 @@ public struct PhotosHelper {
      
      - parameter completion: Called in the background when all albums were retrieved.
      */
-    public static func getAlbums(completion: (albums: [PHAssetCollection]) -> ()) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
+    public static func getAlbums(completion: @escaping (_ albums: [PHAssetCollection]) -> ()) {
+        DispatchQueue.global(qos: .background).async {
             let fetchOptions = PHFetchOptions()
             fetchOptions.sortDescriptors = [NSSortDescriptor(key: "localizedTitle", ascending: true)]
             
-            let albums = PHAssetCollection.fetchAssetCollectionsWithType(.Album, subtype: .Any, options: fetchOptions)
-            let smartAlbums = PHAssetCollection.fetchAssetCollectionsWithType(.SmartAlbum, subtype: .Any, options: fetchOptions)
+            let albums = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: fetchOptions)
+            let smartAlbums = PHAssetCollection.fetchAssetCollections(with: .smartAlbum, subtype: .any, options: fetchOptions)
             
             var result = Set<PHAssetCollection>()
             
             [albums, smartAlbums].forEach {
-                $0.enumerateObjectsUsingBlock { collection, index, stop in
-                    guard let album = collection as? PHAssetCollection else { return }
-                    result.insert(album)
+                $0.enumerateObjects { collection, index, stop in
+                    result.insert(collection)
                 }
             }
             
-            completion(albums: Array<PHAssetCollection>(result))
+            completion(Array<PHAssetCollection>(result))
         }
     }
     
@@ -244,21 +241,21 @@ public struct PhotosHelper {
      
      - parameter completion: Called in the background when all albums were retrieved.
      */
-    public static func getUserCreatedAlbums(completion: (albums: [PHAssetCollection]) -> ()) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
+    public static func getUserCreatedAlbums(completion: @escaping (_ albums: [PHAssetCollection]) -> ()) {
+        DispatchQueue.global(qos: .background).async {
             let fetchOptions = PHFetchOptions()
             fetchOptions.sortDescriptors = [NSSortDescriptor(key: "localizedTitle", ascending: true)]
             
-            let albums = PHCollectionList.fetchTopLevelUserCollectionsWithOptions(fetchOptions)
+            let albums = PHCollectionList.fetchTopLevelUserCollections(with: fetchOptions)
             
             var result = [PHAssetCollection]()
             
-            albums.enumerateObjectsUsingBlock { collection, index, stop in
+            albums.enumerateObjects { collection, index, stop in
                 guard let album = collection as? PHAssetCollection else { return }
                 result.append(album)
             }
             
-            completion(albums: result)
+            completion(result)
         }
     }
     
@@ -267,11 +264,11 @@ public struct PhotosHelper {
      
      - parameter completion: Called in the background when the album was retrieved.
      */
-    public static func getCameraRollAlbum(completion: (album: PHAssetCollection?) -> ()) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
-            let albums = PHAssetCollection.fetchAssetCollectionsWithType(.SmartAlbum, subtype: .AlbumMyPhotoStream, options: nil)
+    public static func getCameraRollAlbum(completion: @escaping (_ album: PHAssetCollection?) -> ()) {
+        DispatchQueue.global(qos: .background).async {
+            let albums = PHAssetCollection.fetchAssetCollections(with: .smartAlbum, subtype: .albumMyPhotoStream, options: nil)
             
-            completion(album: albums.firstObject as? PHAssetCollection)
+            completion(albums.firstObject)
         }
     }
 }
