@@ -75,7 +75,7 @@ class ViewController: UIViewController {
             .filter {$0.position == (back ? .back : .front)}
             .first ?? AVCaptureDevice.default(for: AVMediaType.video)
         
-        guard let input = try? AVCaptureDeviceInput(device: device!) else { return }
+        guard device != nil, let input = try? AVCaptureDeviceInput(device: device!) else { return }
         
         if captureSession.canAddInput(input) {
             captureSession.addInput(input)

@@ -201,8 +201,9 @@ public struct PhotosHelper {
             let fetchedAssets = PHAsset.fetchAssets(in: album, options: assetsFetchOptions)
             
             let rangeLength = fetchOptions.count != 0 ? min(fetchedAssets.count, fetchOptions.count) : fetchedAssets.count
-            let indexSet = IndexSet(integersIn: 0...rangeLength)
-
+            let range = NSMakeRange(0, rangeLength)
+            let indexSet = NSIndexSet(indexesIn: range) as IndexSet
+            
             fetchedAssets.enumerateObjects(at: indexSet, options: []) { asset, index, stop in
                 assets.append(asset)
             }
