@@ -29,9 +29,9 @@ class ViewController: UIViewController {
         view.clipsToBounds = true
         
         let captureButton = UIButton()
-        captureButton.setTitle("take a picture", forState: .Normal)
+        captureButton.setTitle("take a picture", for: .normal)
         captureButton.sizeToFit()
-        captureButton.addTarget(self, action: #selector(ViewController.takePicture(_:)), forControlEvents: .TouchUpInside)
+        captureButton.addTarget(self, action: #selector(ViewController.takePicture(sender:)), for: .touchUpInside)
         
         captureButton.center = CGPoint(x: view.frame.midX, y: view.frame.height - captureButton.frame.midY - padding)
         
@@ -46,8 +46,8 @@ class ViewController: UIViewController {
         
         setDeviceInput()
         
-        if captureSession.canSetSessionPreset(AVCaptureSessionPresetHigh) {
-            captureSession.sessionPreset = AVCaptureSessionPresetHigh
+        if captureSession.canSetSessionPreset(AVCaptureSession.Preset.high) {
+            captureSession.sessionPreset = AVCaptureSession.Preset.high
         }
         
         if captureSession.canAddOutput(output) {
@@ -55,7 +55,7 @@ class ViewController: UIViewController {
         }
         
         captureLayer = AVCaptureVideoPreviewLayer(session: captureSession)
-        captureLayer?.videoGravity = AVLayerVideoGravityResizeAspectFill
+        captureLayer?.videoGravity = AVLayerVideoGravity.resizeAspectFill
         captureLayer?.frame = view.bounds
         guard let captureLayer = captureLayer else { return }
         view.layer.addSublayer(captureLayer)
@@ -67,15 +67,15 @@ class ViewController: UIViewController {
     private func setDeviceInput(back: Bool = true) {
         guard let captureSession = captureSession else { return }
         
-        if let input = captureSession.inputs.first as? AVCaptureInput {
+        if let input = captureSession.inputs.first {
             captureSession.removeInput(input)
         }
         
-        let device = AVCaptureDevice.devicesWithMediaType(AVMediaTypeVideo)
-            .filter {$0.position == (back ? .Back : .Front)}
-            .first as? AVCaptureDevice ?? AVCaptureDevice.defaultDeviceWithMediaType(AVMediaTypeVideo)
+        let device = AVCaptureDevice.devices(for: AVMediaType.video)
+            .filter {$0.position == (back ? .back : .front)}
+            .first ?? AVCaptureDevice.default(for: AVMediaType.video)
         
-        guard let input = try? AVCaptureDeviceInput(device: device) else { return }
+        guard device != nil, let input = try? AVCaptureDeviceInput(device: device!) else { return }
         
         if captureSession.canAddInput(input) {
             captureSession.addInput(input)
@@ -83,22 +83,22 @@ class ViewController: UIViewController {
     }
     
     
-    func takePicture(sender: AnyObject) {
-        let connection = output.connectionWithMediaType(AVMediaTypeVideo)
-        output.captureStillImageAsynchronouslyFromConnection(connection) { [weak self] buffer, error in
-            guard let `self` = self where error == nil else { return }
-            let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(buffer)
+    @objc func takePicture(sender: AnyObject) {
+        let connection = output.connection(with: AVMediaType.video)
+        output.captureStillImageAsynchronously(from: connection!) { [weak self] buffer, error in
+            guard let `self` = self, error == nil else { return }
+            let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(buffer!)!
             guard let image = UIImage(data: imageData) else { return }
             
             PhotosHelper.saveImage(image, toAlbum: "Example Album") { success, _ in
                 guard success else { return }
-                dispatch_async(dispatch_get_main_queue(), {
-                    let alert = UIAlertController(title: "Photo taken", message: "Open Photos.app to see that an album with your photo was created.", preferredStyle: .Alert)
-                    let action = UIAlertAction(title: "Ok", style: .Default, handler: nil)
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Photo taken", message: "Open Photos.app to see that an album with your photo was created.", preferredStyle: .alert)
+                    let action = UIAlertAction(title: "Ok", style: .default, handler: nil)
                     alert.addAction(action)
                     
-                    self.presentViewController(alert, animated: true, completion: nil)
-                })
+                    self.present(alert, animated: true, completion: nil)
+                }
             }
         }
     }
